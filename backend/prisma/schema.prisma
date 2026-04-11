@@ -1,0 +1,106 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id         Int      @id @default(autoincrement())
+  nombres    String
+  apellidos  String
+  correo     String   @unique
+  contrasena String
+  edad       Int?
+  peso       Float?
+  estatura   Float?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  habitos        Habito[]
+  registrosDiarios RegistroDiario[]
+
+  @@map("usuarios")
+}
+
+model CategoriaHabito {
+  id          Int      @id @default(autoincrement())
+  nombre      String   @unique
+  descripcion String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  habitos Habito[]
+
+  @@map("categorias_habito")
+}
+
+model Habito {
+  id          Int      @id @default(autoincrement())
+  nombre      String
+  descripcion String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  categoriaHabitoId Int
+  categoriaHabito   CategoriaHabito @relation(fields: [categoriaHabitoId], references: [id])
+
+  usuarioId Int
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+
+  metas            Meta[]
+  registrosDiarios RegistroDiario[]
+  racha            Racha?
+
+  @@map("habitos")
+}
+
+model Meta {
+  id          Int     @id @default(autoincrement())
+  descripcion String
+  valorMeta   Float
+  activa      Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  habitoId Int
+  habito   Habito @relation(fields: [habitoId], references: [id])
+
+  @@map("metas")
+}
+
+model RegistroDiario {
+  id              Int      @id @default(autoincrement())
+  fecha           DateTime @db.Date
+  valorRegistrado Float
+  observaciones   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  habitoId Int
+  habito   Habito @relation(fields: [habitoId], references: [id])
+
+  usuarioId Int
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+
+  @@unique([habitoId, fecha])
+  @@map("registros_diarios")
+}
+
+model Racha {
+  id          Int      @id @default(autoincrement())
+  rachaActual Int      @default(0)
+  rachaMaxima Int      @default(0)
+  ultimaFecha DateTime? @db.Date
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  habitoId Int    @unique
+  habito   Habito @relation(fields: [habitoId], references: [id])
+
+  @@map("rachas")
+}
