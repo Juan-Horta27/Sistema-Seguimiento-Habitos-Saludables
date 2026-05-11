@@ -8,7 +8,7 @@ export class UpdateMetaDto {
   @IsOptional()
   @IsNumber()
   @IsPositive()
-  valorMeta?: number;
+  valorObjetivo?: number;
 
   @IsOptional()
   @IsBoolean()

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { API_URL } from '@/services/api';
 
 interface Usuario {
   id: number;
@@ -19,7 +20,7 @@ export default function UsuariosPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch('http://localhost:3001/usuarios')
+    fetch(`${API_URL}/usuarios`)
       .then((r) => r.json())
       .then((res) => { setUsuarios(res.data ?? []); setLoading(false); })
       .catch(() => { setError('No se pudo conectar al backend'); setLoading(false); });

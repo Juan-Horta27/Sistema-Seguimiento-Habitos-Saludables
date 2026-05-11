@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { API_URL } from '@/services/api';
 
 interface Habito {
   id: number; nombre: string; descripcion?: string;
   createdAt: string;
   categoriaHabito: { id: number; nombre: string };
   usuario: { id: number; nombres: string; apellidos: string };
-  _count: { registrosDiarios: number; metas: number };
+  _count: { registros: number; metas: number };
 }
 
 export default function HabitoDetailPage() {
@@ -23,7 +24,7 @@ export default function HabitoDetailPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetch(`http://localhost:3001/habitos/${id}`)
+    fetch(`${API_URL}/habitos/${id}`)
       .then(r => r.json())
       .then(res => {
         setHabito(res.data);
@@ -36,7 +37,7 @@ export default function HabitoDetailPage() {
   const handleUpdate = async () => {
     setSaving(true); setError('');
     try {
-      const res = await fetch(`http://localhost:3001/habitos/${id}`, {
+      const res = await fetch(`${API_URL}/habitos/${id}`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre: form.nombre, descripcion: form.descripcion || undefined }),
       });
@@ -102,7 +103,7 @@ export default function HabitoDetailPage() {
           {[
             { label: 'Categoría', value: habito.categoriaHabito.nombre },
             { label: 'Usuario', value: `${habito.usuario.nombres} ${habito.usuario.apellidos}` },
-            { label: 'Registros diarios', value: habito._count.registrosDiarios },
+            { label: 'Registros diarios', value: habito._count.registros },
             { label: 'Metas', value: habito._count.metas },
           ].map(item => (
             <div key={item.label} style={{ backgroundColor: '#21262d', borderRadius: '8px', padding: '14px' }}>

@@ -1,6 +1,14 @@
 import { IsString, IsOptional, IsInt, IsPositive } from 'class-validator';
 
 export class CreateHabitoDto {
+  @IsInt()
+  @IsPositive()
+  usuarioId: number;
+
+  @IsInt()
+  @IsPositive()
+  categoriaHabitoId: number;
+
   @IsString()
   nombre: string;
 
@@ -8,11 +16,10 @@ export class CreateHabitoDto {
   @IsString()
   descripcion?: string;
 
-  @IsInt()
-  @IsPositive()
-  categoriaHabitoId: number;
+  @IsString()
+  unidadMedida: string;
 
-  @IsInt()
-  @IsPositive()
-  usuarioId: number;
+  @IsOptional()
+  @IsString()
+  frecuencia?: string;
 }

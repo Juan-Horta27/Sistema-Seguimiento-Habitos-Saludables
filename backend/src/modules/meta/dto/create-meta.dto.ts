@@ -5,10 +5,11 @@ export class CreateMetaDto {
   @IsPositive()
   habitoId: number;
 
-  @IsString()
-  descripcion: string;
-
   @IsNumber()
   @IsPositive()
-  valorMeta: number;
+  valorObjetivo: number;
+
+  @IsOptional()
+  @IsString()
+  descripcion?: string;
 }

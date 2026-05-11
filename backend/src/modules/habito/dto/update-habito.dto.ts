@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsInt, IsPositive } from 'class-validator';
+import { IsString, IsOptional, IsInt, IsPositive, IsBoolean } from 'class-validator';
 
 export class UpdateHabitoDto {
   @IsOptional()
@@ -10,7 +10,19 @@ export class UpdateHabitoDto {
   descripcion?: string;
 
   @IsOptional()
+  @IsString()
+  unidadMedida?: string;
+
+  @IsOptional()
+  @IsString()
+  frecuencia?: string;
+
+  @IsOptional()
   @IsInt()
   @IsPositive()
   categoriaHabitoId?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  activo?: boolean;
 }

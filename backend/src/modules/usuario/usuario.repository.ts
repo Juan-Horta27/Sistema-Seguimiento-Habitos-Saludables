@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsuarioRepository {
@@ -21,7 +21,10 @@ export class UsuarioRepository {
   };
 
   async findAll() {
-    return this.prisma.usuario.findMany({ select: this.select });
+    return this.prisma.usuario.findMany({
+      select: this.select,
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async findById(id: number) {
@@ -41,7 +44,15 @@ export class UsuarioRepository {
 
     const hash = await bcrypt.hash(dto.contrasena, 10);
     return this.prisma.usuario.create({
-      data: { ...dto, contrasena: hash },
+      data: {
+        nombres: dto.nombres,
+        apellidos: dto.apellidos,
+        correo: dto.correo,
+        contrasena: hash,
+        edad: dto.edad,
+        peso: dto.peso,
+        estatura: dto.estatura,
+      },
       select: this.select,
     });
   }

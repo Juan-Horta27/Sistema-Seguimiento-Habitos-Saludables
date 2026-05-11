@@ -1,5 +1,3 @@
-// This is your Prisma schema file
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -21,86 +19,70 @@ model Usuario {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  habitos        Habito[]
-  registrosDiarios RegistroDiario[]
-
-  @@map("usuarios")
+  habitos Habito[]
 }
 
 model CategoriaHabito {
   id          Int      @id @default(autoincrement())
   nombre      String   @unique
   descripcion String?
+  icono       String?
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 
   habitos Habito[]
-
-  @@map("categorias_habito")
 }
 
 model Habito {
-  id          Int      @id @default(autoincrement())
-  nombre      String
-  descripcion String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  id               Int      @id @default(autoincrement())
+  usuarioId        Int
   categoriaHabitoId Int
-  categoriaHabito   CategoriaHabito @relation(fields: [categoriaHabitoId], references: [id])
+  nombre           String
+  descripcion      String?
+  unidadMedida     String
+  frecuencia       String   @default("diaria")
+  activo           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  usuarioId Int
-  usuario   Usuario @relation(fields: [usuarioId], references: [id])
-
-  metas            Meta[]
-  registrosDiarios RegistroDiario[]
-  racha            Racha?
-
-  @@map("habitos")
+  usuario         Usuario         @relation(fields: [usuarioId], references: [id])
+  categoriaHabito CategoriaHabito @relation(fields: [categoriaHabitoId], references: [id])
+  metas           Meta[]
+  registros       RegistroDiario[]
+  racha           Racha?
 }
 
 model Meta {
-  id          Int     @id @default(autoincrement())
-  descripcion String
-  valorMeta   Float
-  activa      Boolean @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            Int      @id @default(autoincrement())
+  habitoId      Int
+  valorObjetivo Float
+  descripcion   String?
+  activa        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  habitoId Int
-  habito   Habito @relation(fields: [habitoId], references: [id])
-
-  @@map("metas")
+  habito Habito @relation(fields: [habitoId], references: [id])
 }
 
 model RegistroDiario {
   id              Int      @id @default(autoincrement())
+  habitoId        Int
   fecha           DateTime @db.Date
   valorRegistrado Float
-  observaciones   String?
+  metaCumplida    Boolean  @default(false)
+  notas           String?
   createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
 
-  habitoId Int
-  habito   Habito @relation(fields: [habitoId], references: [id])
-
-  usuarioId Int
-  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+  habito Habito @relation(fields: [habitoId], references: [id])
 
   @@unique([habitoId, fecha])
-  @@map("registros_diarios")
 }
 
 model Racha {
   id          Int      @id @default(autoincrement())
+  habitoId    Int      @unique
   rachaActual Int      @default(0)
   rachaMaxima Int      @default(0)
-  ultimaFecha DateTime? @db.Date
-  createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  habitoId Int    @unique
-  habito   Habito @relation(fields: [habitoId], references: [id])
-
-  @@map("rachas")
+  habito Habito @relation(fields: [habitoId], references: [id])
 }

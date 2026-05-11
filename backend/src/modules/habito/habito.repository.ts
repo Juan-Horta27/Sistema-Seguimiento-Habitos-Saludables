@@ -12,9 +12,9 @@ export class HabitoRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   private readonly include = {
-    categoriaHabito: { select: { id: true, nombre: true } },
+    categoriaHabito: { select: { id: true, nombre: true, icono: true } },
     usuario: { select: { id: true, nombres: true, apellidos: true } },
-    _count: { select: { registrosDiarios: true, metas: true } },
+    _count: { select: { registros: true, metas: true } },
   };
 
   async findAll(usuarioId?: number) {
@@ -35,16 +35,12 @@ export class HabitoRepository {
   }
 
   async create(dto: CreateHabitoDto) {
-    // Verificar que la categoría existe
     const categoria = await this.prisma.categoriaHabito.findUnique({
       where: { id: dto.categoriaHabitoId },
     });
     if (!categoria)
-      throw new NotFoundException(
-        `Categoría #${dto.categoriaHabitoId} no encontrada`,
-      );
+      throw new NotFoundException(`Categoría #${dto.categoriaHabitoId} no encontrada`);
 
-    // Verificar que el usuario existe
     const usuario = await this.prisma.usuario.findUnique({
       where: { id: dto.usuarioId },
     });
@@ -52,7 +48,14 @@ export class HabitoRepository {
       throw new NotFoundException(`Usuario #${dto.usuarioId} no encontrado`);
 
     return this.prisma.habito.create({
-      data: dto,
+      data: {
+        usuarioId: dto.usuarioId,
+        categoriaHabitoId: dto.categoriaHabitoId,
+        nombre: dto.nombre,
+        descripcion: dto.descripcion,
+        unidadMedida: dto.unidadMedida,
+        frecuencia: dto.frecuencia ?? 'diaria',
+      },
       include: this.include,
     });
   }
@@ -65,9 +68,7 @@ export class HabitoRepository {
         where: { id: dto.categoriaHabitoId },
       });
       if (!categoria)
-        throw new NotFoundException(
-          `Categoría #${dto.categoriaHabitoId} no encontrada`,
-        );
+        throw new NotFoundException(`Categoría #${dto.categoriaHabitoId} no encontrada`);
     }
 
     return this.prisma.habito.update({

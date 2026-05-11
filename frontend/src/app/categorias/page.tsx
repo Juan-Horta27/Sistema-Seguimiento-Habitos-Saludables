@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { API_URL } from '@/services/api';
 
 interface Categoria {
   id: number;
@@ -36,7 +37,7 @@ export default function CategoriasPage() {
 
   const load = () => {
     setLoading(true);
-    fetch('http://localhost:3001/categorias-habito')
+    fetch(`${API_URL}/categorias`)
       .then((r) => r.json())
       .then((res) => { setCategorias(res.data ?? []); setLoading(false); })
       .catch(() => { setError('No se pudo conectar al backend'); setLoading(false); });
@@ -48,7 +49,7 @@ export default function CategoriasPage() {
     if (!form.nombre.trim()) return;
     setSaving(true);
     try {
-      const res = await fetch('http://localhost:3001/categorias-habito', {
+      const res = await fetch(`${API_URL}/categorias`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),

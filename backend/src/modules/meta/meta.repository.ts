@@ -12,7 +12,7 @@ export class MetaRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   private readonly include = {
-    habito: { select: { id: true, nombre: true } },
+    habito: { select: { id: true, nombre: true, unidadMedida: true } },
   };
 
   async findAll(habitoId?: number) {
@@ -44,14 +44,12 @@ export class MetaRepository {
   }
 
   async create(dto: CreateMetaDto) {
-    // Verificar que el hábito existe
     const habito = await this.prisma.habito.findUnique({
       where: { id: dto.habitoId },
     });
     if (!habito)
       throw new NotFoundException(`Hábito #${dto.habitoId} no encontrado`);
 
-    // Verificar que no existe otra meta activa para el mismo hábito
     const metaActiva = await this.prisma.meta.findFirst({
       where: { habitoId: dto.habitoId, activa: true },
     });
@@ -61,7 +59,11 @@ export class MetaRepository {
       );
 
     return this.prisma.meta.create({
-      data: dto,
+      data: {
+        habitoId: dto.habitoId,
+        valorObjetivo: dto.valorObjetivo,
+        descripcion: dto.descripcion,
+      },
       include: this.include,
     });
   }

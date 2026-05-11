@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export async function apiFetch(path: string, options?: RequestInit) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -12,6 +12,9 @@ export async function apiFetch(path: string, options?: RequestInit) {
   });
 
   const json = await res.json();
-  if (!res.ok) throw new Error(json.message?.[0] || 'Error en la solicitud');
+  if (!res.ok) {
+    const raw = json.message ?? json.error ?? 'Error en la solicitud';
+    throw new Error(Array.isArray(raw) ? raw[0] : raw);
+  }
   return json.data;
 }

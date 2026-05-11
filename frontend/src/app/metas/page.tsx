@@ -1,16 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { API_URL } from '@/services/api';
 
 interface Meta {
-  id: number; descripcion: string; valorMeta: number; activa: boolean; createdAt: string;
+  id: number; descripcion: string; valorObjetivo: number; activa: boolean; createdAt: string;
   habito: { id: number; nombre: string };
 }
 interface Habito { id: number; nombre: string; }
 
 export default function MetasPage() {
+  return (
+    <Suspense fallback={<div style={{ color: '#8B949E', textAlign: 'center', paddingTop: 60 }}>Cargando metas...</div>}>
+      <MetasContent />
+    </Suspense>
+  );
+}
+
+function MetasContent() {
   const searchParams = useSearchParams();
   const habitoIdParam = searchParams.get('habitoId');
 
@@ -21,17 +30,17 @@ export default function MetasPage() {
   const [success, setSuccess] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ habitoId: habitoIdParam ?? '', descripcion: '', valorMeta: '' });
+  const [form, setForm] = useState({ habitoId: habitoIdParam ?? '', descripcion: '', valorObjetivo: '' });
 
   const load = () => {
     setLoading(true);
     const url = habitoIdParam
-      ? `http://localhost:3001/metas?habitoId=${habitoIdParam}`
-      : 'http://localhost:3001/metas';
+      ? `${API_URL}/metas?habitoId=${habitoIdParam}`
+      : `${API_URL}/metas`;
 
     Promise.all([
       fetch(url).then(r => r.json()),
-      fetch('http://localhost:3001/habitos').then(r => r.json()),
+      fetch(`${API_URL}/habitos`).then(r => r.json()),
     ])
       .then(([m, h]) => { setMetas(m.data ?? []); setHabitos(h.data ?? []); setLoading(false); })
       .catch(() => { setError('No se pudo conectar al backend'); setLoading(false); });
@@ -40,20 +49,20 @@ export default function MetasPage() {
   useEffect(() => { load(); }, [habitoIdParam]);
 
   const handleSubmit = async () => {
-    if (!form.habitoId || !form.descripcion || !form.valorMeta) {
+    if (!form.habitoId || !form.descripcion || !form.valorObjetivo) {
       setError('Todos los campos son obligatorios'); return;
     }
     setSaving(true); setError('');
     try {
-      const res = await fetch('http://localhost:3001/metas', {
+      const res = await fetch(`${API_URL}/metas`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ habitoId: +form.habitoId, descripcion: form.descripcion, valorMeta: +form.valorMeta }),
+        body: JSON.stringify({ habitoId: +form.habitoId, descripcion: form.descripcion, valorObjetivo: +form.valorObjetivo }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.message?.[0] ?? 'Error al crear meta'); }
       else {
         setSuccess('✅ Meta creada correctamente');
-        setForm({ habitoId: habitoIdParam ?? '', descripcion: '', valorMeta: '' });
+        setForm({ habitoId: habitoIdParam ?? '', descripcion: '', valorObjetivo: '' });
         setShowForm(false); load();
         setTimeout(() => setSuccess(''), 3000);
       }
@@ -63,7 +72,7 @@ export default function MetasPage() {
 
   const toggleActiva = async (meta: Meta) => {
     try {
-      const res = await fetch(`http://localhost:3001/metas/${meta.id}`, {
+      const res = await fetch(`${API_URL}/metas/${meta.id}`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ activa: !meta.activa }),
       });
@@ -130,7 +139,7 @@ export default function MetasPage() {
             <div>
               <label style={labelStyle}>VALOR META * (número)</label>
               <input type="number" style={{ ...inputStyle, width: '200px' }} placeholder="ej: 8"
-                value={form.valorMeta} onChange={e => setForm({ ...form, valorMeta: e.target.value })} />
+                value={form.valorObjetivo} onChange={e => setForm({ ...form, valorObjetivo: e.target.value })} />
             </div>
             <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
               <button onClick={handleSubmit} disabled={saving} style={{
@@ -183,7 +192,7 @@ export default function MetasPage() {
                 </div>
                 <div style={{ fontSize: '15px', fontWeight: '600', color: '#e6edf3', marginBottom: '4px' }}>{meta.descripcion}</div>
                 <div style={{ fontSize: '13px', color: '#7d8590' }}>
-                  Objetivo: <span style={{ color: '#2dd4bf', fontWeight: '700' }}>{meta.valorMeta}</span>
+                  Objetivo: <span style={{ color: '#2dd4bf', fontWeight: '700' }}>{meta.valorObjetivo}</span>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '8px', marginLeft: '20px' }}>
